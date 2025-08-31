@@ -1,12 +1,15 @@
 import { Await, useLocation } from "react-router-dom";
-import { todosByUserId, deleteTodoById, updateTodoById, createTodoByUserid } from "../Services/TodoServices";
+import { todosByUserId, deleteTodoById, updateTodoById, createTodoByUserid, getUserId } from "../Services/TodoServices";
 import { useEffect, useState } from "react";
 
-const TodoHomePage = () => {
+import { useAuth } from "../Services/AuthContext";
+
+const Todos = () => {
     const location = useLocation();
-    // const userId = location.state?.userId;
-    // const userId = 'a8a84200-996a-4da7-9c45-0a1252180d70';
-    const userId = 'ae9206dc-ee41-444a-b009-1b19671be452';
+    const [isLoged, setLoged] = useState(false);
+    const [email, setEmail] = useState(null);
+    const [password, setPassword] = useState(null);
+
     const [editId, setEditId] = useState(null);
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -16,9 +19,26 @@ const TodoHomePage = () => {
 
 
     const [todos, setTodos] = useState([]);
+
+
+    const { authUser,
+        setAuthUser,
+        isLoggedIn,
+        setIsLoggedIn,
+        userId,
+        setUserId } = useAuth();
+
+
+    // const [userId, setUserId] = useState(() => {
+    //     const storedAuth = localStorage.getItem("authData");
+    //     return storedAuth ? JSON.parse(storedAuth).userId : null;
+    // });
+
     useEffect(() => {
-        allTodos();
-    }, [])
+        if (isLoggedIn) {
+            allTodos();
+        }
+    }, [isLoggedIn]);
 
     const allTodos = async () => {
         try {
@@ -27,7 +47,7 @@ const TodoHomePage = () => {
             console.log(userIdTodos);
             setTodos(userIdTodos);
         } catch (error) {
-            console.error(error);
+            console.error('userId not found');
         }
     }
 
@@ -96,19 +116,19 @@ const TodoHomePage = () => {
             case ('Low'):
                 return <span id="low">🟢Low</span>;
                 break;
-            case('Medium'):
+            case ('Medium'):
                 return <span id="medium">🟡Medium</span>;
                 break;
-            case('High'):
+            case ('High'):
                 return <span id="high">🔴High</span>;
                 break;
-            case('Pending'):
+            case ('Pending'):
                 return <span id="pending">⬛Pending</span>;
                 break;
-            case('In progress'):
+            case ('In progress'):
                 return <span id="inprogress">🟧In progress</span>;
                 break;
-            case('Completed'):
+            case ('Completed'):
                 return <span id="completed">🟦Completed</span>;
                 break;
             default:
@@ -121,7 +141,7 @@ const TodoHomePage = () => {
         switch (true) {
             case (l >= 15):
                 return 300;
-                    // backgroundColor: "hsl(300, 50%, 50%)"
+            // backgroundColor: "hsl(300, 50%, 50%)"
             case (l >= 13):
                 return 250;
             case (l >= 11):
@@ -132,7 +152,7 @@ const TodoHomePage = () => {
                 return 100;
             case (l >= 5):
                 return 330;
-            case (l >= 1):
+            case (l >= 0):
                 return 350;
             default:
                 console.error("Something went wrong!");
@@ -232,6 +252,21 @@ const TodoHomePage = () => {
 
     return (
         <>
+            <div
+                className="p-5 bg-image"
+                style={{
+                    backgroundImage: "url('https://wallpaperbat.com/img/870551-popular-abstract-wallpaper.jpg')",
+                    height: "100vh",              // full viewport height
+                    width: "100%",                // full width
+                    backgroundSize: "cover",      // cover the entire area
+                    backgroundPosition: "center", // center the image
+                    backgroundRepeat: "no-repeat",// prevent tiling
+                    position: "fixed",            // stick to screen even if scrolling
+                    top: 0,
+                    left: 0,
+                    zIndex: 0
+                }}
+            ></div>
             <div id="formControlerContainer">
                 {
                     formController()
@@ -241,16 +276,16 @@ const TodoHomePage = () => {
                 <table>
                     <thead>
                         <tr>
-                            <th><i class="bi bi-caret-down"></i>Title</th>
+                            <th><i className="bi bi-caret-down"></i>Title</th>
                             <th style={{
                                 width: "15%"
                             }}><i className="bi bi-file-text"></i>Description</th>
-                            <th><i class="bi bi-calendar"></i>Created</th>
+                            <th><i className="bi bi-calendar"></i>Created</th>
                             <th><i className="bi bi-bar-chart"></i>Priority</th>
                             <th><i className="bi bi-rocket"></i>Status</th>
                             <th ><i className="bi bi-calendar-check"></i>Due date</th>
-                            <th style={{padding: "2px"}}><i className="bi bi-chat-right-text"></i>Edit</th>
-                            <th style={{padding: "2px"}}><i className="bi bi-database-dash"></i>Delete</th>
+                            <th style={{ padding: "2px" }}><i className="bi bi-chat-right-text"></i>Edit</th>
+                            <th style={{ padding: "2px" }}><i className="bi bi-database-dash"></i>Delete</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -302,12 +337,12 @@ const TodoHomePage = () => {
                         id="createNewTodo"
                         className="btn btn-outline-success"
                         onClick={() => {
-                                formController();
-                                setEditId(null);
-                            }
+                            formController();
+                            setEditId(null);
+                        }
                         }
                     >
-                        <span><i class="bi bi-database-add"></i>Add</span>
+                        <span><i className="bi bi-database-add"></i>Add</span>
                     </button>
                 </div>
 
@@ -316,4 +351,4 @@ const TodoHomePage = () => {
     )
 }
 
-export default TodoHomePage;
+export default Todos;

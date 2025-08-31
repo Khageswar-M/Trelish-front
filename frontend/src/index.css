@@ -12,7 +12,7 @@ body {
 }
 
 #applicationHeader {
-  background-color: gray;
+  background-color: transparent;
   width: 100%;
   height: 50px;
   position: fixed;
@@ -20,6 +20,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 1000;
 }
 
 
@@ -45,20 +46,50 @@ body {
   position: absolute;
   width: 30%;
   height: 50%;
-  top: 30%;
-  left: 35%;
+  top: 60%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
+
+/* #loginContainer {
+  position: absolute;
+  width: 30%;
+  height: 50%;
+  top: 60%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+} */
 
 #loginForm {
   position: relative;
-  background-color: gray;
-  height: 100%;
-  width:100%;
+  height: 60%;
+  width: 50%;
   display: flex;
   align-items: center;
   justify-content: space-evenly;
   flex-direction: column;
   border-radius: 10px;
+}
+
+#loginForm1 {
+  position: relative;
+  height: 265px;
+  width: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: space-evenly;
+  flex-direction: column;
+  border-radius: 10px;
+}
+
+#logoutBtn {
+  position: absolute;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  right: 10%;
+  font-size: 1.5rem;
+  z-index: 1;
 }
 
 #todoList {
@@ -177,15 +208,110 @@ tbody tr td span {
   font-family: Verdana, sans-serif;
 }
 
-#appName,#navUl {
+#appName,
+#navUl {
   margin-bottom: 0px;
 }
 
-ul li:hover{
+ul li:hover {
   color: hsl(222, 100%, 50%);
 }
 
-#getEmailInput, #getPasswordInput{
-  position: relative;
+#loginContainer {
+  position: absolute;
+  top: 60%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   width: 80%;
+  height: 70%;
+  box-shadow: 0px 0px 5px black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+      background-color: #252525;
+}
+
+#loginContainer1 {
+  position: absolute;
+  top: 61%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 80%;
+  height: 43%;
+  box-shadow: 0px 0px 5px black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #252525;
+}
+
+#getEmailInput,
+#getPasswordInput,
+#getEmailInput1 {
+  position: relative;
+  width: 95%;
+  color: white;
+}
+
+#emailInput,
+#emailInput1,
+#passwordInput1,
+#passwordInput {
+  background-color: transparent;
+  color: white;
+}
+
+#emailInput::placeholder,
+#emailInput1::placeholder,
+#passwordInput1::placeholder,
+#passwordInput::placeholder {
+  color: gray;
+}
+
+/* #formSubmitBtn{
+  width: 100;
+} */
+
+#loginSubmitBtn {
+  font-weight: bold;
+  font-size: 1.3rem;
+  width: 95%;
+  box-shadow: 0px 0px 5px #131313;
+}
+
+
+.errorAlert {
+  position: absolute;
+  top: 18%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: handleAlert 0.5s ease-in-out;
+}
+
+@keyframes handleAlert {
+  0% {
+    top: 5%;
+  }
+
+  100% {
+    top: 18%;
+  }
+}
+
+.successAlert {
+  position: absolute;
+  top: 18%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation: handleAlert 0.5s ease-in-out;
+}
+
+@keyframes handleAlert {
+  0% {
+    top: 5%;
+  }
+
+  100% {
+    top: 18%;
+  }
 }

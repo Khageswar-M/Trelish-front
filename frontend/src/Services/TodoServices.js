@@ -13,3 +13,7 @@ export const todoByTodoId = (todoId) => axios.get(BASE_URL+`/${todoId}`);
 export const deleteTodoById = (todoId) => axios.delete(BASE_URL+`/${todoId}`);
 
 export const updateTodoById = (todoId, todo) => axios.put(BASE_URL+`/${todoId}`, todo);
+
+export const checkUserName = (user) => axios.get(BASE_URL+`/check?user=${user}`);
+
+export const getUserId = ({email, password}) => axios.get(BASE_URL+`/get/userid?email=${email}&password=${password}`); 
