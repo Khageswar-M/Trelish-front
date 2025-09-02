@@ -46,11 +46,10 @@ const Login = () => {
             setUserId(uid);
 
             setIsLoggedIn(true);
-            navigator('/todos');
             setAuthUser({
                 Name: 'Khageswar Maharana'
             })
-
+            
 
 
         } catch (error) {
@@ -101,10 +100,12 @@ const Login = () => {
                                 color: 'lightred',
                                 fontSize: '1.3rem',
                                 width: '50%',
-                                textAlign: 'center'
+                                textAlign: 'center',
+                                zIndex: "3"
                             }}
                             id="loginDone"
-                            className="alert alert-warning successAlert bg-warning bg-gradient" role="alert">
+                            className="alert alert-warning successAlert bg-warning bg-gradient" role="alert" 
+                            >
                             Invalid username & password<i className="bi bi-check2-all"></i>
                         </div>
                     )

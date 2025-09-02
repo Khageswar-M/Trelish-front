@@ -29,11 +29,6 @@ const Todos = () => {
         setUserId } = useAuth();
 
 
-    // const [userId, setUserId] = useState(() => {
-    //     const storedAuth = localStorage.getItem("authData");
-    //     return storedAuth ? JSON.parse(storedAuth).userId : null;
-    // });
-
     useEffect(() => {
         if (isLoggedIn) {
             allTodos();
@@ -241,7 +236,7 @@ const Todos = () => {
                                 saveOrupdate();
                             }}
                         >
-                            Submit
+                            Add
                         </button>
                     </div>
                 </form>
@@ -252,27 +247,14 @@ const Todos = () => {
 
     return (
         <>
-            <div
-                className="p-5 bg-image"
-                style={{
-                    backgroundImage: "url('https://wallpaperbat.com/img/870551-popular-abstract-wallpaper.jpg')",
-                    height: "100vh",              // full viewport height
-                    width: "100%",                // full width
-                    backgroundSize: "cover",      // cover the entire area
-                    backgroundPosition: "center", // center the image
-                    backgroundRepeat: "no-repeat",// prevent tiling
-                    position: "fixed",            // stick to screen even if scrolling
-                    top: 0,
-                    left: 0,
-                    zIndex: 0
-                }}
-            ></div>
             <div id="formControlerContainer">
                 {
                     formController()
                 }
             </div>
-            <div id="todoList">
+            <div id="todoList"
+                className="hover-scroll-y"
+            >
                 <table>
                     <thead>
                         <tr>

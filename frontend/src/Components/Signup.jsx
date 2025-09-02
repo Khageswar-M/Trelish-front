@@ -7,6 +7,8 @@ import { motion, AnimatePresence } from "framer-motion";
 
 import { useAuth } from "../Services/AuthContext";
 
+import { useNavigate } from "react-router-dom";
+
 const Signup = () => {
     const [isSignin, setIsSignin] = useState(false);
     const [email, setEmail] = useState('');
@@ -15,6 +17,8 @@ const Signup = () => {
     const [isError, setIsError] = useState(false);
 
     const [errorMessage, setErrorMessage] = useState(null);
+
+    const navigator = useNavigate();
 
     const { authUser,
             setAuthUser,
@@ -60,7 +64,11 @@ const Signup = () => {
             console.log(response.data);
             setErrorMessage(null);
             setIsSignin(true);
-            setIsLoggedIn(true)
+            setIsLoggedIn(true);
+
+            setTimeout(() => {
+                navigator('/todos');
+            }, 2000);
 
         } catch (error) {
             setErrorMessage('User name is already taken');
@@ -126,7 +134,11 @@ const Signup = () => {
                 }
                 {
                     isSignin && (
-                        <div id="siginDone" className="alert alert-success errorAlert bg-success bg-gradient" role="alert">
+                        <div id="siginDone" className="alert alert-success errorAlert bg-success bg-gradient" role="alert"
+                            style={{
+                                zIndex: '3'
+                            }}
+                        >
                             You are successfully signed in
                         </div>
                     )
