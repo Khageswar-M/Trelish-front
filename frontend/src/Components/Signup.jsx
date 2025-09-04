@@ -40,16 +40,6 @@ const Signup = () => {
 
     }, [errorMessage])
 
-    // useEffect(() => {
-    //     if (isSignin) {
-    //         const timer = setTimeout(() => {
-    //             setIsSignin(false);
-    //         }, 5000);
-
-    //         return () => clearTimeout(timer);
-    //     }
-    // }, [isSignin]);
-
     const handleSignin = async (e) => {
         e.preventDefault();
 
@@ -65,6 +55,7 @@ const Signup = () => {
             setErrorMessage(null);
             setIsSignin(true);
             setIsLoggedIn(true);
+            setUserId(response.data.userId);
 
             setTimeout(() => {
                 navigator('/todos');

@@ -1,11 +1,16 @@
 import { Await, useLocation } from "react-router-dom";
-import { todosByUserId, deleteTodoById, updateTodoById, createTodoByUserid, getUserId } from "../Services/TodoServices";
-import { useEffect, useState } from "react";
+import { todosByUserId, deleteTodoById, updateTodoById, createTodoByUserid } from "../Services/TodoServices";
+import { useEffect, useState, useRef } from "react";
+import { motion } from 'framer-motion';
+import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../Services/AuthContext";
 
+import Sortable from 'sortablejs';
+
 const Todos = () => {
     const location = useLocation();
+    const navigator = useNavigate();
     const [isLoged, setLoged] = useState(false);
     const [email, setEmail] = useState(null);
     const [password, setPassword] = useState(null);
@@ -19,6 +24,8 @@ const Todos = () => {
 
 
     const [todos, setTodos] = useState([]);
+    const [loading, setLoading] = useState(false);
+    const [storedLength, setStoredLength] = useState(7);
 
 
     const { authUser,
@@ -28,6 +35,27 @@ const Todos = () => {
         userId,
         setUserId } = useAuth();
 
+    const formRef = useRef(null);
+    useEffect(() => {
+        const lengthFromStorage = localStorage.getItem("todosLength");
+        if(lengthFromStorage){
+            setStoredLength(Number(lengthFromStorage));
+        }
+    }, [])
+
+    useEffect(() => {
+        if(isLoged){
+            localStorage.setItem("todosLength", todos.length);
+        }
+    }, [todos])
+
+    useEffect(() => {
+        setLoading(true);
+        const timer = setTimeout(() => {
+            setLoading(false);
+        }, 2000);
+        return () => clearTimeout(timer);
+    }, []);
 
     useEffect(() => {
         if (isLoggedIn) {
@@ -69,31 +97,44 @@ const Todos = () => {
         }
     }
 
+
+
     const saveOrupdate = () => {
+        if (!isLoggedIn) {
+            return;
+        }
+
         if (dueDate === '') {
             setDueDate(new Date().toISOString().split('T')[0]);
         }
         const todo = { title, description, status, priority, dueDate };
         if (editId) {
-            updateTodoById(editId, todo)
-                .then(response => {
-                    console.log(response.data);
-                    allTodos();
-                    setEditId(null);
-                }).catch(error => {
-                    console.error(error);
-                })
-
-
-
+            try {
+                updateTodoById(editId, todo)
+                    .then(response => {
+                        console.log(response.data);
+                        allTodos();
+                        setEditId(null);
+                    }).catch(error => {
+                        console.error(error);
+                    })
+            } catch (error) {
+                console.error(error);
+            }
         } else {
-            createTodoByUserid(userId, todo)
-                .then((response) => {
-                    console.log(response.data)
-                    allTodos();
-                }).catch(error => {
-                    console.error(error);
-                });
+            try {
+                createTodoByUserid(userId, todo)
+                    .then((response) => {
+                        console.log(response.data)
+                        allTodos();
+                    }).catch(error => {
+                        console.error(error);
+                    });
+
+            } catch (error) {
+                console.error(error);
+            }
+
 
         }
     }
@@ -109,23 +150,37 @@ const Todos = () => {
     const priorityAndStatus = (ps) => {
         switch (ps) {
             case ('Low'):
-                return <span id="low">🟢Low</span>;
-                break;
+                return (
+                    <span id="low">
+                        <i className="bi bi-circle-fill" style={{ fontSize: "0.8rem", color: "hsl(111 100% 16% / 1)" }} ></i>Low
+                    </span>
+                );
             case ('Medium'):
-                return <span id="medium">🟡Medium</span>;
-                break;
+                return (
+                    <span id="medium">
+                        <i className="bi bi-circle-fill" style={{ fontSize: "0.8rem", color: "hsl(67 100% 16% / 1)" }} ></i>Medium
+                    </span>);
             case ('High'):
-                return <span id="high">🔴High</span>;
-                break;
+                return (
+                    <span id="high">
+                        <i className="bi bi-circle-fill" style={{ fontSize: "0.8rem", color: "hsl(11 100% 16% / 1)" }} ></i>High
+                    </span>);
             case ('Pending'):
-                return <span id="pending">⬛Pending</span>;
-                break;
+                return (
+                    <span id="pending">
+                        <i className="bi bi-circle-fill" style={{ fontSize: "0.8rem", color: "hsl(0deg 0% 22%)" }} ></i>Pending
+                    </span>);
             case ('In progress'):
-                return <span id="inprogress">🟧In progress</span>;
-                break;
+
+                return (
+                    <span id="inprogress">
+                        <i className="bi bi-circle-fill" style={{ fontSize: "0.8rem", color: "hsl(232.23deg 100% 59.64%" }} ></i>In progress
+                    </span>);
             case ('Completed'):
-                return <span id="completed">🟦Completed</span>;
-                break;
+                return (
+                    <span id="completed">
+                        <i className="bi bi-circle-fill" style={{ fontSize: "0.8rem", color: "hsl(119.06deg 100% 50%)" }} ></i>Completed
+                    </span>);
             default:
                 return 'Something went wrong!'
         }
@@ -136,7 +191,6 @@ const Todos = () => {
         switch (true) {
             case (l >= 15):
                 return 300;
-            // backgroundColor: "hsl(300, 50%, 50%)"
             case (l >= 13):
                 return 250;
             case (l >= 11):
@@ -155,15 +209,21 @@ const Todos = () => {
     }
 
 
+    const [isClicked, setIsClicked] = useState(false);
     // add api accordingly
     const formController = () => {
-
+        if (formRef.current && isClicked) {
+            formRef.current.classList.remove("border-blink");
+            void formRef.current.offsetWidth;
+            formRef.current.classList.add("border-blink");
+            setIsClicked(false);
+        }
         return (
-            <div id="formControl">
-                <form id="controlForm">
-                    <h1 id="formPurpose">{editOrAdd()}</h1>
+            <div id="formControl" ref={formRef} style={{ border: "2px solid transparent" }}>
+                <form id="controlForm" >
+                    <h1 id="formPurpose" style={{ color: "gray" }}>{editOrAdd()}</h1>
                     <div id="forTitle">
-                        <label htmlFor="controlTitle">Title</label><br />
+                        {/* <label htmlFor="controlTitle">Title</label><br /> */}
                         <input
                             placeholder="Enter title"
                             className="form-control"
@@ -172,11 +232,12 @@ const Todos = () => {
                             value={title}
                             maxLength={15}
                             id="controlTitle"
+                            required
                         />
                     </div>
 
                     <div id="forDescription">
-                        <label htmlFor="controlDescription">Description</label><br />
+                        {/* <label htmlFor="controlDescription">Description</label><br /> */}
                         <input
                             placeholder="Enter description"
                             className="form-control"
@@ -185,39 +246,40 @@ const Todos = () => {
                             value={description}
                             maxLength={50}
                             id="controlDescription"
+                            required
                         />
                     </div>
-                    <div style={{ display: "flex", gap: "10px" }}>
+                    <div style={{ display: "flex", gap: "10px", justifyContent: "space-between" }}>
                         <div id="forPriority">
-                            <label htmlFor="controlPriority">Priority</label><br />
+                            <label style={{ color: "gray" }} htmlFor="controlPriority">Priority</label><br />
                             <select
                                 className="form-select"
                                 id="controlPriority"
                                 value={priority}
                                 onChange={(e) => setPriority(e.target.value)}
                             >
-                                <option value="Low">🟢Low</option>
-                                <option value="Medium">🟡Medium</option>
-                                <option value="High">🔴High</option>
+                                <option value="Low">Low</option>
+                                <option value="Medium">Medium</option>
+                                <option value="High">High</option>
                             </select>
                         </div>
 
                         <div id="forStatus">
-                            <label htmlFor="controlStatus">Status</label><br />
+                            <label style={{ color: "gray" }} htmlFor="controlStatus">Status</label><br />
                             <select
                                 className="form-select"
                                 id="controlStatus"
                                 value={status}
                                 onChange={(e) => setStatus(e.target.value)}
                             >
-                                <option value="Pending">⚫Pending</option>
-                                <option value="In Progress">🔵In progress</option>
-                                <option value="Completed">🟣Completed</option>
+                                <option value="Pending">Pending</option>
+                                <option value="In Progress">In progress</option>
+                                <option value="Completed">Completed</option>
                             </select>
                         </div>
                     </div>
                     <div id="forDeuDate">
-                        <label htmlFor="controlDueDate">Due date</label><br />
+                        <label style={{ color: "gray" }} htmlFor="controlDueDate">Due date</label><br />
                         <input
                             className="form-control"
                             type="date"
@@ -228,7 +290,7 @@ const Todos = () => {
                         />
                     </div>
 
-                    <div id="submitContrl">
+                    <div id="submitControl">
                         <button
                             className="btn btn-outline-primary"
                             onClick={(e) => {
@@ -245,8 +307,50 @@ const Todos = () => {
 
     }
 
+    const tbodyRef = useRef(null);
+    useEffect(() => {
+        if (tbodyRef.current) {
+            new Sortable(tbodyRef.current, {
+                animation: 150,
+                handle: '.drag-handle',
+                dragClass: 'rounded-none!',
+                onEnd: (evt) => {
+                    const newOrder = Array.from(tbodyRef.current.children).map(row => row.dataset.id);
+                    localStorage.setItem("todosOrder", JSON.stringify(newOrder));
+                }
+            })
+        }
+    })
+
     return (
-        <>
+        <>{
+            !isLoggedIn &&
+            <motion.div
+                id="loginWarning"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: -20 }}
+                transition={{ duration: 0.5 }}
+            >
+                <p className="font-medium">
+                    Hi there!<br />
+                    You need to Login to continue. Don’t worry, it only takes a moment.
+                </p>
+                <motion.button
+
+                    whileHover={{ scale: 1.01 }}
+                    whileTap={{ scale: 0.98 }}
+                    style={{
+                        backgroundColor: "#006097",
+                        padding: "5px 20px",
+                        fontWeight: "bold",
+                        borderRadius: "10px"
+                    }}
+                    onClick={() => navigator('/login')}
+                >
+                    Goto Login page
+                </motion.button>
+            </motion.div >
+        }
             <div id="formControlerContainer">
                 {
                     formController()
@@ -258,6 +362,7 @@ const Todos = () => {
                 <table>
                     <thead>
                         <tr>
+                            <th style={{ border: "none" }}></th>
                             <th><i className="bi bi-caret-down"></i>Title</th>
                             <th style={{
                                 width: "15%"
@@ -270,64 +375,97 @@ const Todos = () => {
                             <th style={{ padding: "2px" }}><i className="bi bi-database-dash"></i>Delete</th>
                         </tr>
                     </thead>
-                    <tbody>
-                        {
-                            todos.map((t) => {
-                                return (
-                                    <tr key={t.id}>
-                                        <td><span style={{
-                                            backgroundColor: `hsl(${setStyling(t.title)} 50% 50%)`
-                                        }}>{t.title}</span></td>
-                                        <td><span style={{
-                                            backgroundColor: `hsl(${setStyling(t.description) - 20} 70% 20%)`
-                                        }}>{t.description}</span></td>
-                                        <td><span>{t.createdAt?.split("T")[0]}</span></td>
-                                        <td><span>{priorityAndStatus(t.priority)}</span></td>
-                                        <td><span>{priorityAndStatus(t.status)}</span></td>
-                                        <td><span>{t.dueDate}</span></td>
-                                        <td>
-                                            <button
-                                                onClick={() => editTodo(t.id)}
-                                                className="btn btn-outline-primary"
-                                                id="editBtn"
-                                            >
-                                                <i className="bi bi-pen"></i>
-                                            </button>
-                                        </td>
-                                        <td>
-                                            <button
-                                                onClick={() => remove(t.id)}
-                                                className="btn btn-outline-danger"
-                                                id="deleteBtn"
-                                            >
-                                                <i className="bi bi-trash"></i>
-                                            </button>
-                                        </td>
-                                    </tr>
+                    <tbody ref={tbodyRef}>
+                        {loading && isLoggedIn ? (
+                            Array.from({ length: storedLength || 7 }).map((_, i) => (
+                                <tr 
+                                    key={i} 
+                                    className="animate-pulse"
+                                >
+                                    <td colSpan={9}>
+                                        <div className="flex flex-col space-y-2">
+                                            <div className="h-2.5 bg-gray-200 rounded-full dark:bg-gray-700 w-48" style={{
+                                                width: "100%",
+                                                height: "35px",
+                                                borderRadius: "0px"
+                                            }}></div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            ))
+                        ) : (
+                            todos.slice().sort((a, b) =>{
+                                if(a.status === "Completed" && b.status !== "Completed") return -1;
+                                if(a.status !== "Completed" && b.status === "Completed") return 1;
+                                return 0;
+                            }).map((t) => (
+                                <tr key={t.id}>
+                                    <td className="drag-handle">
+                                        <svg class="shrink-0 size-4 ms-auto text-gray-400 dark:text-neutral-500 cursor-grab" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="9" cy="12" r="1"></circle>
+                                            <circle cx="9" cy="5" r="1"></circle>
+                                            <circle cx="9" cy="19" r="1"></circle>
+                                            <circle cx="15" cy="12" r="1"></circle>
+                                            <circle cx="15" cy="5" r="1"></circle>
+                                            <circle cx="15" cy="19" r="1"></circle>
+                                        </svg>
+                                    </td>
+                                    <td><span style={{
+                                        backgroundColor: `hsl(${setStyling(t.title)} 50% 25%)`
+                                    }}>{t.title}</span></td>
+                                    <td><span style={{
+                                        backgroundColor: `hsl(${setStyling(t.description) - 20} 70% 25%)`
+                                    }}>{t.description}</span></td>
+                                    <td><span>{t.createdAt?.split("T")[0]}</span></td>
+                                    <td><span>{priorityAndStatus(t.priority)}</span></td>
+                                    <td><span>{priorityAndStatus(t.status)}</span></td>
+                                    <td><span>{t.dueDate}</span></td>
+                                    <td>
+                                        <button
+                                            onClick={() => {
+                                                editTodo(t.id);
+                                                setIsClicked(true);
+                                            }}
+                                            className="btn btn-outline-primary"
+                                            id="editBtn"
+                                        >
+                                            <i className="bi bi-pen"></i>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <button
+                                            onClick={() => remove(t.id)}
+                                            className="btn btn-outline-danger"
+                                            id="deleteBtn"
+                                        >
+                                            <i className="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
 
-                                )
-
-                            })
-                        }
+                            ))
+                        )}
                     </tbody>
 
                 </table>
 
-                <div id="addButton">
 
-                    <button
-                        id="createNewTodo"
-                        className="btn btn-outline-success"
-                        onClick={() => {
-                            formController();
-                            setEditId(null);
-                        }
-                        }
-                    >
-                        <span><i className="bi bi-database-add"></i>Add</span>
-                    </button>
-                </div>
 
+            </div>
+            <div id="addButton">
+
+                <button
+                    id="createNewTodo"
+                    className="btn btn-success"
+                    onClick={() => {
+                        formController();
+                        setIsClicked(true);
+                        setEditId(null);
+                    }
+                    }
+                >
+                    <span><i className="bi bi-database-add"></i>Add Todo</span>
+                </button>
             </div>
         </>
     )

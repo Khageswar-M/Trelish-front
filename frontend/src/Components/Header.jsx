@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 
 import { useAuth } from "../Services/AuthContext";
 
+// import logo from "../assets/Trellis.com.png";
+
 
 const Header = () => {
     const location = useLocation();
@@ -41,12 +43,29 @@ const Header = () => {
         }
     }
 
+    const iconStatus = () => {
+        if(authUser.Name != 'Guest'){
+            return(<i className="bi bi-house-fill" style={{fontSize: "1.5rem",
+    color: "#E36f1e"}}></i>);
+        }else{
+            return(<i className="bi bi-house" style={{fontSize: "1.5rem",
+    color: "gray"}}></i>)
+        }
+    }
+
 
     return (
         <>
             <div id="applicationHeader">
                 <header id="appHeader">
-                    <h1 id="appName">Trellis</h1>
+                    <span id="appName" onClick={() => navigate('/home')} style={{cursor:"pointer"}}>
+                        <img src="/Trellis.com.png" alt="Trellis" />
+                    </span>
+                    <div style={{position: "absolute", left:"13vw"}}>
+                        {/* <span><i className="bi bi-house-fill" style={{fontSize: "1.5rem",
+    color: "#E36f1e"}}></i>{authUser.Name}</span> */}
+                        <span>{iconStatus()}{authUser.Name}</span>
+                    </div>
                     <ul id="navUl">
                         <li style={locationHandler('/home')}
                             onClick={() => navigate('/home')}
