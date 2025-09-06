@@ -1,13 +1,14 @@
-/* :root {
-  background-color: #242424;
-} */
+
 
 @import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+@import url('https://fonts.googleapis.com/css2?family=Engagement&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
 
 @import "tailwindcss";
 
 :root {
-  --font-family: 'Poppins';
+  --font-family: 'Poppins',sans-serif;
+  --font-family-date: "JetBrains Mono", monospace;
 }
 
 body {
@@ -146,7 +147,7 @@ body {
 
 #loginForm1 {
   position: relative;
-  height: 265px;
+  height: 290px;
   width: 50%;
   display: flex;
   align-items: center;
@@ -197,7 +198,7 @@ tbody {
 }
 
 tbody td {
-  cursor: pointer;
+  cursor: grab;
   padding: 2px 10px;
   transition: background-color 0.2s ease;
 }
@@ -206,6 +207,7 @@ tbody td {
 table thead th {
   border: 1px solid white;
   padding: 0px 20px;
+  white-space: nowrap;
 }
 
 #deleteBtn,
@@ -275,7 +277,10 @@ tbody tr td span {
 
 tbody tr:hover {
   background-color: #131725;
-} 
+}
+tbody tr{
+  cursor: grab;
+}
 
 #low {
   background-color: hsl(122deg 100% 8.83%);
@@ -355,7 +360,7 @@ ul li:hover {
   left: 50%;
   transform: translate(-50%, -50%);
   width: 80%;
-  height: 43%;
+  height: 50%;
   box-shadow: 0px 0px 5px black;
   display: flex;
   align-items: center;
@@ -365,6 +370,7 @@ ul li:hover {
 
 #getEmailInput,
 #getPasswordInput,
+#getReEnteredPasswordInput,
 #getEmailInput1 {
   position: relative;
   width: 95%;
@@ -374,6 +380,7 @@ ul li:hover {
 #emailInput,
 #emailInput1,
 #passwordInput1,
+#passwordInput2,
 #passwordInput {
   background-color: transparent;
   color: white;
@@ -382,6 +389,7 @@ ul li:hover {
 #emailInput::placeholder,
 #emailInput1::placeholder,
 #passwordInput1::placeholder,
+#passwordInput2::placeholder,
 #passwordInput::placeholder {
   color: gray;
 }
@@ -400,9 +408,9 @@ ul li:hover {
 
 .errorAlert {
   position: absolute;
-  top: 18%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 12%;
+  z-index: 1;
+  right: 5vw;
   animation: handleAlert 0.5s ease-in-out;
 }
 
@@ -450,7 +458,7 @@ ul li:hover {
 
   25% {
     box-shadow: 0px 0px 10px #119959;
-    border-color: #119959;
+    border-color: #119099;
   }
 
   50% {
@@ -460,7 +468,7 @@ ul li:hover {
 
   75% {
     box-shadow: 0px 0px 10px #119959;
-    border-color: #119959;
+    border-color: #119099;
   }
 
   100% {
@@ -473,16 +481,22 @@ ul li:hover {
   animation: borderBlink 1s ease-in-out 1;
 }
 
-#loginWarning{
-    position: absolute;
-    height: 20vh;
-    width: 50vw;
-    bottom: 10vh;
-    z-index: 1;
-    text-align: center;
-    left: 28%;
-    transform: translate(-50%, -50%);
-    background-color: #191919;
-    border-radius: 10px;
+#loginWarning {
+  position: absolute;
+  height: 20vh;
+  width: 50vw;
+  bottom: 10vh;
+  z-index: 1;
+  text-align: center;
+  left: 28%;
+  transform: translate(-50%, -50%);
+  background-color: #191919;
+  border-radius: 10px;
   padding: 10px;
 }
+
+
+.day-font{
+  font-family: var(--font-family-date);
+}
+

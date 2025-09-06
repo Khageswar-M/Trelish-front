@@ -20,7 +20,6 @@ export function AuthProvider({ children }) {
     localStorage.setItem("authData",
       JSON.stringify({authUser, isLoggedIn, userId})
     );
-    console.log('from 2nd block')
 
   }, [authUser, isLoggedIn, userId]);
   

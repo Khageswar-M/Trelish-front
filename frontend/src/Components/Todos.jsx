@@ -8,6 +8,7 @@ import { useAuth } from "../Services/AuthContext";
 
 import Sortable from 'sortablejs';
 
+
 const Todos = () => {
     const location = useLocation();
     const navigator = useNavigate();
@@ -27,6 +28,7 @@ const Todos = () => {
     const [loading, setLoading] = useState(false);
     const [storedLength, setStoredLength] = useState(7);
 
+    const [hoveredRow, setHoveredRow] = useState(null);
 
     const { authUser,
         setAuthUser,
@@ -36,15 +38,16 @@ const Todos = () => {
         setUserId } = useAuth();
 
     const formRef = useRef(null);
+
     useEffect(() => {
         const lengthFromStorage = localStorage.getItem("todosLength");
-        if(lengthFromStorage){
+        if (lengthFromStorage) {
             setStoredLength(Number(lengthFromStorage));
         }
     }, [])
 
     useEffect(() => {
-        if(isLoged){
+        if (isLoged) {
             localStorage.setItem("todosLength", todos.length);
         }
     }, [todos])
@@ -53,7 +56,7 @@ const Todos = () => {
         setLoading(true);
         const timer = setTimeout(() => {
             setLoading(false);
-        }, 2000);
+        }, 1500);
         return () => clearTimeout(timer);
     }, []);
 
@@ -67,7 +70,6 @@ const Todos = () => {
         try {
             const response = await todosByUserId(userId);
             const userIdTodos = response.data;
-            console.log(userIdTodos);
             setTodos(userIdTodos);
         } catch (error) {
             console.error('userId not found');
@@ -78,7 +80,6 @@ const Todos = () => {
         try {
             const response = await deleteTodoById(todoId);
             setTodos((prev) => prev.filter((t) => t.id !== todoId));
-            console.log(response.data);
         } catch (error) {
             console.error(error);
         }
@@ -112,7 +113,6 @@ const Todos = () => {
             try {
                 updateTodoById(editId, todo)
                     .then(response => {
-                        console.log(response.data);
                         allTodos();
                         setEditId(null);
                     }).catch(error => {
@@ -125,7 +125,6 @@ const Todos = () => {
             try {
                 createTodoByUserid(userId, todo)
                     .then((response) => {
-                        console.log(response.data)
                         allTodos();
                     }).catch(error => {
                         console.error(error);
@@ -208,6 +207,16 @@ const Todos = () => {
         }
     }
 
+    //function to restrict the date input
+    const handleDateInput = () => {
+        const today = new Date();
+        const yyyy = today.getFullYear();
+        const mm = String(today.getMonth() + 1).padStart(2, "0");
+        const dd = String(today.getDate()).padStart(2, "0");
+        return `${yyyy}-${mm}-${dd}`;
+    }
+
+
 
     const [isClicked, setIsClicked] = useState(false);
     // add api accordingly
@@ -278,16 +287,32 @@ const Todos = () => {
                             </select>
                         </div>
                     </div>
-                    <div id="forDeuDate">
+                    {/* <div id="forDeuDate">
                         <label style={{ color: "gray" }} htmlFor="controlDueDate">Due date</label><br />
                         <input
                             className="form-control"
                             type="date"
                             id="controlDueDate"
+                            min={handleDateInput()}
                             value={dueDate}
                             onChange={(e) => setDueDate(e.target.value)}
 
                         />
+                    </div> */}
+                    <div className="relative max-w-sm" id="forDeuDate">
+                        <div className="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
+                        {/* <div> */}
+                            <svg className="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
+                            </svg>
+                        </div>
+                        <input
+                            className="form-control"
+                            type="date"
+                            id="controlDueDate"
+                            min={handleDateInput()}
+                            value={dueDate}
+                            onChange={(e) => setDueDate(e.target.value)} />
                     </div>
 
                     <div id="submitControl">
@@ -320,7 +345,24 @@ const Todos = () => {
                 }
             })
         }
-    })
+    }, [])
+
+    //function to handle 'createdAt data'
+    const handleCreatedAt = (createdAt) => {
+        if (!createdAt) return "";
+
+        const isoDate = createdAt.split("T")[0];
+        if (!isoDate) return "";
+
+        const [year, month, day] = isoDate.split("-");
+
+        const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Des"];
+        const monthName = monthNames[parseInt(month, 10) - 1];
+
+        return `${day}-${monthName}-${year}`;
+
+    }
 
     return (
         <>{
@@ -363,6 +405,7 @@ const Todos = () => {
                     <thead>
                         <tr>
                             <th style={{ border: "none" }}></th>
+                            <th style={{padding: "0px 3px"}}><i className="bi bi-layers"> Sl. No</i></th>
                             <th><i className="bi bi-caret-down"></i>Title</th>
                             <th style={{
                                 width: "15%"
@@ -371,15 +414,15 @@ const Todos = () => {
                             <th><i className="bi bi-bar-chart"></i>Priority</th>
                             <th><i className="bi bi-rocket"></i>Status</th>
                             <th ><i className="bi bi-calendar-check"></i>Due date</th>
-                            <th style={{ padding: "2px" }}><i className="bi bi-chat-right-text"></i>Edit</th>
+                            <th style={{ padding: "2px"}}><i className="bi bi-chat-right-text"></i>Edit</th>
                             <th style={{ padding: "2px" }}><i className="bi bi-database-dash"></i>Delete</th>
                         </tr>
                     </thead>
                     <tbody ref={tbodyRef}>
                         {loading && isLoggedIn ? (
                             Array.from({ length: storedLength || 7 }).map((_, i) => (
-                                <tr 
-                                    key={i} 
+                                <tr
+                                    key={i}
                                     className="animate-pulse"
                                 >
                                     <td colSpan={9}>
@@ -394,14 +437,22 @@ const Todos = () => {
                                 </tr>
                             ))
                         ) : (
-                            todos.slice().sort((a, b) =>{
-                                if(a.status === "Completed" && b.status !== "Completed") return -1;
-                                if(a.status !== "Completed" && b.status === "Completed") return 1;
+                            todos.slice().sort((a, b) => {
+                                if (a.status === "Completed" && b.status !== "Completed") return -1;
+                                if (a.status !== "Completed" && b.status === "Completed") return 1;
                                 return 0;
-                            }).map((t) => (
-                                <tr key={t.id}>
-                                    <td className="drag-handle">
-                                        <svg class="shrink-0 size-4 ms-auto text-gray-400 dark:text-neutral-500 cursor-grab" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            }).map((t, index) => (
+                                <tr key={t.id} 
+                                    onMouseOver={() => setHoveredRow(t.id)}
+                                    onMouseOut={() => setHoveredRow(null)}
+                                    className="drag-handle"
+                                >
+                                    <td  id="draggedTd"
+                                        style={{
+                                            opacity: hoveredRow === t.id ? 1 : 0,
+                                        }}
+                                    >
+                                        <svg className="shrink-0 size-4 ms-auto text-gray-400 dark:text-neutral-500 cursor-grab" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                             <circle cx="9" cy="12" r="1"></circle>
                                             <circle cx="9" cy="5" r="1"></circle>
                                             <circle cx="9" cy="19" r="1"></circle>
@@ -410,17 +461,18 @@ const Todos = () => {
                                             <circle cx="15" cy="19" r="1"></circle>
                                         </svg>
                                     </td>
+                                    <td style={{textAlign: "center"}}><span>{index + 1}.</span></td>
                                     <td><span style={{
                                         backgroundColor: `hsl(${setStyling(t.title)} 50% 25%)`
                                     }}>{t.title}</span></td>
                                     <td><span style={{
                                         backgroundColor: `hsl(${setStyling(t.description) - 20} 70% 25%)`
                                     }}>{t.description}</span></td>
-                                    <td><span>{t.createdAt?.split("T")[0]}</span></td>
+                                    <td><span className="day-font">{handleCreatedAt(t.createdAt)}</span></td>
                                     <td><span>{priorityAndStatus(t.priority)}</span></td>
                                     <td><span>{priorityAndStatus(t.status)}</span></td>
-                                    <td><span>{t.dueDate}</span></td>
-                                    <td>
+                                    <td><span className="day-font">{handleCreatedAt(t.dueDate)}</span></td>
+                                    <td >
                                         <button
                                             onClick={() => {
                                                 editTodo(t.id);
